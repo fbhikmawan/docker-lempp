@@ -1,0 +1,3 @@
+# Ignore service's volume
+/data/db
+/data/tmp

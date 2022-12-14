@@ -1,0 +1,62 @@
+services:
+  nginx:
+    image: nginx:alpine
+    restart: always
+    links:
+      - 5-6-23-fpm
+      - 7-0-8-fpm
+      - 8-0-0-fpm
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./data/nginx/enabled:/etc/nginx/conf.d
+      - ./data/nginx/snippets:/nginx/snippets
+      - ./data/nginx/certificates:/nginx/certificates
+    volumes_from:
+      - data
+
+  5-6-23-fpm:
+    image: php:5.6.23-fpm-alpine
+    restart: always
+    volumes_from:
+      - data
+
+  7-0-8-fpm:
+    image: php:7.0.8-fpm-alpine
+    restart: always
+    volumes_from:
+      - data
+      
+  8-0-0-fpm:
+    image: php:8.0.0-fpm-alpine
+    restart: always
+    volumes_from:
+      - data
+
+  db:
+    image: mariadb #v10.5.8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./data/db:/var/lib/mysql
+
+  dbadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_USER: root # Remove line for production
+      PMA_PASSWORD: root # Remove line for production
+    depends_on:
+      - db
+    # ports:
+    #   - "8080:80"
+
+  data:
+    image: alpine:latest
+    command: echo "READY!!!"
+    volumes:
+      - ./data/vhosts:/vhosts
+      - ./data/tmp:/tmp
